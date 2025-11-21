@@ -1,0 +1,28 @@
+<h2>Stock History</h2>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Date</th>
+        <th>Product</th>
+        <th>Type</th>
+        <th>Quantity</th>
+    </tr>
+
+    {% for t in transactions %}
+    <tr>
+        <td>{{ t.date }}</td>
+        <td>{{ t.product.name }}</td>
+        <td>
+            {% if t.transaction_type == "IN" %}
+                <span style="color: green;">Stock In</span>
+            {% else %}
+                <span style="color: red;">Stock Out</span>
+            {% endif %}
+        </td>
+        <td>{{ t.quantity }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p><a href="{% url 'stock_manage' %}">Stock In / Out</a></p>
+<p><a href="{% url 'dashboard' %}">Back to Dashboard</a></p>

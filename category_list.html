@@ -1,0 +1,330 @@
+<!-- ICONS (Lucide Icons CDN - Lightweight) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<h2 class="title">Categories</h2>
+
+<!-- Add Button -->
+<a href="{% url 'category_add' %}" class="add-btn"><i data-lucide="plus"></i> Add Category</a>
+
+<div class="table-container">
+
+    <!-- Search -->
+    <input type="text" id="searchInput" class="search-bar" placeholder="Search category...">
+
+    <!-- Export Buttons -->
+    <div class="export-buttons">
+        <button onclick="exportTable('csv')" class="exp-btn"><i data-lucide="file"></i> CSV</button>
+        <button onclick="exportTable('excel')" class="exp-btn"><i data-lucide="table"></i> Excel</button>
+        <button onclick="exportTable('pdf')" class="exp-btn"><i data-lucide="file-text"></i> PDF</button>
+    </div>
+
+    <!-- Table -->
+    <table id="categoryTable" class="styled-table">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">Name ⬍</th>
+                <th onclick="sortTable(1)">Description ⬍</th>
+                <th>Products</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>{{ category.name }}</td>
+
+                <td>{{ category.description }}</td>
+
+                <!-- Badge (example: number of products) -->
+                <td>
+                    <span class="badge">{{ category.products.count }}</span>
+                </td>
+
+                <td>
+                    <a href="{% url 'category_edit' category.id %}" class="action-btn edit"><i data-lucide="pencil"></i></a>
+                    <button onclick="confirmDelete({{ category.id }})" class="action-btn delete">
+                        <i data-lucide="trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if categories.has_previous %}
+            <a href="?page={{ categories.previous_page_number }}">&laquo; Prev</a>
+        {% endif %}
+
+        <span class="page-number">Page {{ categories.number }} of {{ categories.paginator.num_pages }}</span>
+
+        {% if categories.has_next %}
+            <a href="?page={{ categories.next_page_number }}">Next &raquo;</a>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- DELETE POPUP -->
+<div id="delete-popup" class="popup-overlay">
+    <div class="popup-box">
+        <h3>Delete Category?</h3>
+        <p>This action cannot be undone.</p>
+
+        <div class="popup-buttons">
+            <button id="cancel-btn" class="cancel">Cancel</button>
+            <a id="delete-link" class="delete-confirm">Delete</a>
+        </div>
+    </div>
+</div>
+
+
+<style>
+/* GENERAL */
+.title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+/* ADD BUTTON */
+.add-btn {
+    padding: 12px 16px;
+    background-color: #1abc9c;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.25s;
+}
+.add-btn:hover {
+    background-color: #16a085;
+}
+
+/* SEARCH BAR */
+.search-bar {
+    width: 250px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+}
+
+/* EXPORT BUTTONS */
+.export-buttons {
+    margin-bottom: 10px;
+}
+.exp-btn {
+    padding: 8px 12px;
+    border: 1px solid #2980b9;
+    background: white;
+    color: #2980b9;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.exp-btn:hover {
+    background: #2980b9;
+    color: white;
+}
+
+/* TABLE */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+.styled-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+.styled-table thead {
+    background-color: #2c3e50;
+    color: white;
+}
+.styled-table th, .styled-table td {
+    padding: 14px 16px;
+}
+.styled-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* BADGE */
+.badge {
+    background-color: #1abc9c;
+    color: white;
+    padding: 4px 10px;
+    font-size: 13px;
+    border-radius: 20px;
+}
+
+/* ACTION BUTTONS */
+.action-btn {
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+}
+.edit {
+    color: #2980b9;
+}
+.delete {
+    color: #e74c3c;
+}
+
+/* POPUP */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+.popup-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 320px;
+    text-align: center;
+}
+.popup-buttons {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+}
+.cancel {
+    padding: 8px 14px;
+    background: #7f8c8d;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.delete-confirm {
+    padding: 8px 14px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+/* PAGINATION */
+.pagination {
+    margin-top: 15px;
+}
+.pagination a {
+    padding: 6px 10px;
+    background: #2c3e50;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+}
+.page-number {
+    margin: 0 10px;
+}
+</style>
+
+<script>
+/* SEARCH */
+document.getElementById("searchInput").addEventListener("keyup", function () {
+    const filter = this.value.toLowerCase();
+    document.querySelectorAll("#categoryTable tbody tr").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+    });
+});
+
+/* SORTING */
+function sortTable(n) {
+    const table = document.getElementById("categoryTable");
+    let switching = true, dir = "asc";
+
+    while (switching) {
+        switching = false;
+        let rows = table.rows;
+
+        for (let i = 1; i < rows.length - 1; i++) {
+            let a = rows[i].getElementsByTagName("td")[n];
+            let b = rows[i + 1].getElementsByTagName("td")[n];
+            let shouldSwitch = (dir === "asc")
+                ? a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase()
+                : a.innerHTML.toLowerCase() < b.innerHTML.toLowerCase();
+
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                break;
+            }
+        }
+
+        if (!switching && dir === "asc") {
+            dir = "desc";
+            switching = true;
+        }
+    }
+}
+
+/* DELETE POPUP */
+function confirmDelete(id) {
+    const popup = document.getElementById("delete-popup");
+    popup.style.display = "flex";
+
+    document.getElementById("delete-link").href = "/category/delete/" + id;
+}
+document.getElementById("cancel-btn").onclick = function () {
+    document.getElementById("delete-popup").style.display = "none";
+};
+
+/* EXPORT (CSV, Excel, PDF) */
+function exportTable(type) {
+    let table = document.getElementById("categoryTable").outerHTML;
+    let filename = "categories." + type;
+
+    if (type === "csv") {
+        let csv = [];
+        document.querySelectorAll("#categoryTable tr").forEach(row => {
+            let cols = row.querySelectorAll("td, th");
+            let rowData = [];
+            cols.forEach(col => rowData.push(col.innerText));
+            csv.push(rowData.join(","));
+        });
+
+        downloadFile(csv.join("\n"), filename, "text/csv");
+    }
+    else if (type === "excel") {
+        downloadFile(table, filename, "application/vnd.ms-excel");
+    }
+    else if (type === "pdf") {
+        let w = window.open("", "");
+        w.document.write("<html><body>" + table + "</body></html>");
+        w.print();
+        w.close();
+    }
+}
+
+function downloadFile(content, fileName, type) {
+    const file = new Blob([content], { type: type });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
+}
+</script>
+
+<script>
+  lucide.createIcons();
+</script>

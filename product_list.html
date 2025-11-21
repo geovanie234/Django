@@ -1,0 +1,25 @@
+<h2>Products</h2>
+<a href="{% url 'product_add' %}">Add Product</a>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for product in products %}
+    <tr>
+        <td>{{ product.name }}</td>
+        <td>{{ product.category.name }}</td>
+        <td>{{ product.quantity }}</td>
+        <td>{{ product.price }}</td>
+        <td>
+            <a href="{% url 'product_edit' product.id %}">Edit</a> |
+            <a href="{% url 'product_delete' product.id %}">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    body {
+        background: #eef2f7;
+        font-family: "Poppins", sans-serif;
+    }
+
+    /* PAGE CONTAINER */
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-top: 40px;
+        animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* DASHBOARD TITLE */
+    h1 {
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: #1e3c72;
+        letter-spacing: 1px;
+    }
+
+    /* TOP RIGHT THEME SWITCH */
+    .theme-toggle {
+        float: right;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        background: #1e3c72;
+        padding: 8px 16px;
+        color: white;
+        border-radius: 20px;
+        transition: 0.3s;
+    }
+
+    .theme-toggle:hover {
+        background: #15305d;
+    }
+
+    /* DASHBOARD STATS */
+    .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: 25px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 25px;
+        width: 300px;
+        text-align: center;
+        box-shadow: 0 7px 20px rgba(0,0,0,0.08);
+        transition: 0.3s ease;
+        cursor: pointer;
+        animation: fadeIn 0.7s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    }
+
+    .stat-card h4 {
+        color: #2980b9;
+        font-size: 17px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .stat-card .count {
+        font-size: 50px;
+        font-weight: 800;
+        color: #1e3c72;
+    }
+
+    /* TABLE */
+    table {
+        width: 100%;
+        background: white;
+        border-radius: 12px;
+        margin-top: 25px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .table-dark th {
+        background: #1e3c72 !important;
+        color: white !important;
+        text-align: center;
+    }
+
+    tbody tr:hover {
+        background: #eaf2ff;
+        transition: 0.2s;
+    }
+
+    /* SEARCH BAR */
+    .search-box {
+        margin-top: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .search-box input {
+        width: 260px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #c7c7c7;
+        transition: 0.2s;
+    }
+
+    .search-box input:focus {
+        border-color: #2980b9;
+        box-shadow: 0 0 5px rgba(41,128,185,0.4);
+        outline: none;
+    }
+
+    /* CHART BOXES */
+    .chart-box {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-top: 30px;
+        animation: fadeIn 0.8s ease;
+    }
+
+    /* DARK MODE */
+    body.dark-mode {
+        background: #1b1b1b;
+    }
+
+    body.dark-mode .container {
+        background: #2c2c2c;
+        color: white;
+    }
+
+    body.dark-mode table,
+    body.dark-mode .chart-box,
+    body.dark-mode .stat-card {
+        background: #3a3a3a;
+        color: white;
+    }
+
+    body.dark-mode .theme-toggle {
+        background: #444;
+    }
+
+</style>
+
+<div class="container">
+
+    <!-- DARK / LIGHT MODE -->
+    <div class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</div>
+
+    <h1>📊 Inventory Management Dashboard</h1>
+
+    <!-- STATISTICS -->
+    <div class="stats-row">
+
+        <div class="stat-card">
+            <h4>Total Products</h4>
+            <div class="count" data-count="{{ total_products }}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h4>Total Categories</h4>
+            <div class="count" data-count="{{ total_categories }}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h4>Low Stock</h4>
+            <div class="count" data-count="{{ low_stock }}">0</div>
+        </div>
+    </div>
+
+    <h3 style="margin-top:40px;">Recent Transactions</h3>
+
+    <!-- SEARCH BAR -->
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search product...">
+    </div>
+
+    <!-- TABLE -->
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Product</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+
+        <tbody id="tableBody">
+        {% for t in recent_transactions %}
+            <tr>
+                <td>{{ t.product.name }}</td>
+                <td class="text-center">
+                    {% if t.transaction_type == "IN" %}
+                        <span class="badge bg-success">IN</span>
+                    {% else %}
+                        <span class="badge bg-danger">OUT</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">{{ t.quantity }}</td>
+                <td class="text-center">{{ t.date }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- CHARTS -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="chart-box">
+                <h4 class="text-center">📦 Product Quantities</h4>
+                <canvas id="productChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="chart-box">
+                <h4 class="text-center">📁 Category Stock Value</h4>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+/* ANIMATED COUNTERS */
+document.querySelectorAll(".count").forEach(counter => {
+    let target = +counter.getAttribute("data-count");
+    let count = 0;
+    let speed = target / 60;
+
+    function runCount() {
+        if(count < target) {
+            count += speed;
+            counter.innerText = Math.ceil(count);
+            requestAnimationFrame(runCount);
+        }
+    }
+    runCount();
+});
+
+/* SEARCH FILTER FOR TRANSACTIONS */
+const searchInput = document.getElementById("searchInput");
+searchInput.addEventListener("keyup", () => {
+    let filter = searchInput.value.toLowerCase();
+    let rows = document.querySelectorAll("#tableBody tr");
+
+    rows.forEach(row => {
+        let text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+    });
+});
+
+/* DARK MODE */
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+}
+
+/* CHARTS */
+new Chart(document.getElementById('productChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ product_names|safe }},
+        datasets: [{
+            label: 'Quantity',
+            data: {{ product_quantities|safe }},
+            backgroundColor: '#2a5298'
+        }]
+    }
+});
+
+new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ category_names|safe }},
+        datasets: [{
+            data: {{ category_values|safe }},
+            backgroundColor: ['#1e3c72', '#2a5298', '#4e89ae', '#76b5c5', '#a2d5f2']
+        }]
+    }
+});
+</script>
+
+{% endblock %}
